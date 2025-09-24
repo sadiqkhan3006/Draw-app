@@ -103,6 +103,18 @@ app.post("/createroom", protect, async (req: Request, res: Response) => {
                 success: false
             })
         }
+        const existingRoom = await prismaClient.room.findFirst({
+            where: {
+                slug
+            }
+        })
+        if (existingRoom) {
+            return res.status(200).json({
+                message: "Room already exists",
+                success: false,
+                room: existingRoom
+            })
+        }
         const newRoom = await prismaClient.room.create({
             data: {
                 slug,
@@ -115,7 +127,7 @@ app.post("/createroom", protect, async (req: Request, res: Response) => {
         return res.status(200).json({
             message: "Room created",
             success: true,
-            roomDetails: newRoom
+            room: newRoom
         })
     }
     catch (err: any) {
@@ -125,9 +137,6 @@ app.post("/createroom", protect, async (req: Request, res: Response) => {
 
         })
     }
-})
-app.get("/rooms", protect, async (req: Request, res: Response) => {
-    //will complete later 
 })
 app.get("/chats/:roomId", async (req, res) => {
     try {
@@ -140,15 +149,18 @@ app.get("/chats/:roomId", async (req, res) => {
             orderBy: {
                 id: "desc"
             },
-            take: 1000
+            take: 1000,
+            select: {
+                message: true
+            }
         });
 
-        res.json({
+        return res.json({
             messages
         })
     } catch (e) {
         console.log(e);
-        res.json({
+        return res.json({
             messages: []
         })
     }
@@ -162,7 +174,7 @@ app.get("/room/:slug", async (req, res) => {
         }
     });
 
-    res.json({
+    return res.json({
         room
     })
 })
