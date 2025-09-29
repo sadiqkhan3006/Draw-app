@@ -4,14 +4,29 @@ import { prismaClient } from "@repo/db/client"
 import { JWT_SECRET } from "@repo/backend-common/config.ts";
 import bcrypt from "bcrypt"
 import { protect } from "./middleware";
+import cors from "cors";
 const app = express();
-
+app.use(
+    cors(
+        {
+            origin: "*",
+            credentials: true
+        }
+    )
+)
 app.use(express.json());
 app.post("/signup", async (req: Request, res: Response) => {
-    const { email, password, name } = req.body;
-    if (!email || !password || !name) {
+    const { email, password, name, confirmpassword } = req.body;
+    if (!email || !password || !name || !confirmpassword) {
         return res.status(400).json({
+            success: false,
             message: "Fields missing !!"
+        })
+    }
+    if (password != confirmpassword) {
+        return res.status(400).json({
+            success: false,
+            message: "pls check the password fields",
         })
     }
     try {
@@ -27,14 +42,16 @@ app.post("/signup", async (req: Request, res: Response) => {
         console.log("USer: ", newUser);
         return res.status(200).json({
             newUser,
-            message: "user added"
+            message: "user added",
+            success: true
         })
     }
     catch (err: any) {
         //console.log("erro: ", err.message);
         return res.status(400).json({
             error: err.message || "Server error",
-            message: "User failed to be added"
+            message: "User failed to be added",
+            success: false
 
         })
     }
@@ -42,17 +59,14 @@ app.post("/signup", async (req: Request, res: Response) => {
 
 })
 app.post("/signin", async (req: Request, res: Response) => {
-    const { email, password, confirmpassword } = req.body;
-    if (!email || !password || !confirmpassword) {
+    const { email, password } = req.body;
+    if (!email || !password) {
         return res.status(400).json({
+            success: false,
             message: "Fields missing !!"
         })
     }
-    if (password != confirmpassword) {
-        return res.status(400).json({
-            message: "pls check the password fields",
-        })
-    }
+
     try {
         const user = await prismaClient.user.findFirst({
             where: {
@@ -87,7 +101,8 @@ app.post("/signin", async (req: Request, res: Response) => {
     catch (err: any) {
         return res.status(400).json({
             error: err.message || "Server error",
-            message: "User failed to be added"
+            message: "User failed to be added",
+            success: false
 
         })
     }
