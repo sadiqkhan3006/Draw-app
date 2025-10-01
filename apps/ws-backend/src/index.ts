@@ -3,10 +3,11 @@ const wss = new WebSocketServer({ port: 8080 });
 import jwt, { JwtPayload } from "jsonwebtoken"
 import { JWT_SECRET } from "@repo/backend-common/config.ts"
 import { prismaClient } from "@repo/db/client";
+import { v4 as uuidv4 } from "uuid";
 function checkUser(token: string): string | null {
     try {
         const decoded: JwtPayload = jwt.verify(token, JWT_SECRET) as JwtPayload;
-        console.log(decoded);
+        //console.log(decoded);
         if (!decoded || !decoded.userId)
             return null;
         return decoded.userId;
@@ -19,6 +20,7 @@ function checkUser(token: string): string | null {
 }
 //defining state //
 interface User {
+    wsId: string
     userId: string,
     rooms: string[],
     ws: WebSocket,
@@ -28,8 +30,9 @@ interface Data {
     roomId: string,
     message?: string
 }
-const users: User[] = [];
+let users: User[] = [];
 wss.on('connection', (ws, request) => {
+    const id = uuidv4();
     const url = request.url;
     if (!url) return;
     const queryParams = new URLSearchParams(url?.split("?")[1]);
@@ -40,11 +43,14 @@ wss.on('connection', (ws, request) => {
         return;
     }
     users.push({
+        wsId: id,
         userId,
         ws,
         rooms: []
     })
+    console.log(users.length);
     ws.on("message", async (data) => {
+        //console.log(users);
         const str = data.toString();
         let parsed_data: Data = JSON.parse(str);
         if (parsed_data.type === "join_room") {
@@ -94,15 +100,16 @@ wss.on('connection', (ws, request) => {
             if (!message) return;
 
             try {
+                console.log(roomId);
                 await prismaClient.chat.create({
                     data: {
                         roomId,
-                        message,
+                        message: JSON.stringify(message),
                         userId
                     }
                 })
                 users.forEach(user => {
-
+                    console.log(message);
                     if (user.rooms.includes(roomId) && user.ws !== ws) {
                         user.ws.send(JSON.stringify({
                             type: "message",
@@ -118,9 +125,28 @@ wss.on('connection', (ws, request) => {
             }
 
         }
-        console.log(users);
+        if (parsed_data.type === "ongoing") {
+            const message = parsed_data.message;
+            const roomId = parsed_data.roomId;
+            users.forEach(user => {
+                console.log(message);
+                if (user.rooms.includes(roomId) && user.ws !== ws) {
+                    user.ws.send(JSON.stringify({
+                        type: "onmessage",
+                        message,
+                        roomId,
+
+                    }))
+                }
+            })
+        }
 
     })
+    ws.on("close", (code, reason) => {
+        console.log(`❌ Connection closed. Code: ${code}, Reason: ${reason}`);
+        users = users.filter((user) => user.ws !== ws)
+        //console.log(users)
+    });
 })
 // join message 
 // {

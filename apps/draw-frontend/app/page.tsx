@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 export default function Home() {
   const router = useRouter()
   return (
-   <div className="bg-black text-2xl text-white h-screen w-screen  " >
+   <div className="bg-black text-2xl text-white h-screen w-screen overflow-hidden  " >
     <h1>Draw app</h1>
     <button onClick={
       ()=>{

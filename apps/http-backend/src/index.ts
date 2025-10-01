@@ -157,7 +157,7 @@ app.get("/chats/:roomId", async (req, res) => {
     try {
         const roomId = req.params.roomId;
         console.log(req.params.roomId);
-        const messages = await prismaClient.chat.findMany({
+        const resp = await prismaClient.chat.findMany({
             where: {
                 roomId: roomId
             },
@@ -169,8 +169,11 @@ app.get("/chats/:roomId", async (req, res) => {
                 message: true
             }
         });
-
-        return res.json({
+        const messages: any = [];
+        resp.forEach((ele) => {
+            messages.push(JSON.parse(ele.message));
+        })
+        return res.status(200).json({
             messages
         })
     } catch (e) {
@@ -182,16 +185,26 @@ app.get("/chats/:roomId", async (req, res) => {
 
 })
 app.get("/room/:slug", async (req, res) => {
-    const slug = req.params.slug;
-    const room = await prismaClient.room.findFirst({
-        where: {
-            slug
-        }
-    });
+    try {
+        const slug = req.params.slug;
+        const room = await prismaClient.room.findFirst({
+            where: {
+                slug
+            }
+        });
 
-    return res.json({
-        room
-    })
+        return res.status(200).json({
+            success: true,
+            roomId: room?.id
+        })
+    }
+    catch (err: any) {
+        return res.status(400).json({
+            success: false,
+            message: err.message || "Internal server error"
+        })
+    }
+
 })
 app.listen("3030", () => {
     console.log("server started");

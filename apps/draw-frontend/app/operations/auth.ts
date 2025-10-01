@@ -1,6 +1,7 @@
 import axios, { Axios, AxiosError } from "axios";
 import { BACKEND_URL } from "../config"
 import toast from "react-hot-toast";
+
 interface Body {
     name?: String,
     email?: String,
@@ -8,6 +9,7 @@ interface Body {
     confirmPassword?: String,
 }
 export async function signup(body: Body) {
+
     const toastID = toast.loading("Loading..");
     try {
         const res = await axios.post(`${BACKEND_URL}/signup`, body);
@@ -15,6 +17,7 @@ export async function signup(body: Body) {
         setTimeout(() => {
             toast.dismiss(toastID);
         }, 2000);
+
         return res.data;
     }
     catch (err: any) {
@@ -27,6 +30,7 @@ export async function signup(body: Body) {
     }
 }
 export async function signin(body: Body) {
+
     const toastID = toast.loading("Loading..")
     try {
         const res = await axios.post(`${BACKEND_URL}/signin`, body);
@@ -35,6 +39,7 @@ export async function signin(body: Body) {
         setTimeout(() => {
             toast.dismiss(toastID);
         }, 2000);
+
         return res.data;
     }
     catch (err: any) {
@@ -44,5 +49,15 @@ export async function signin(body: Body) {
             toast.dismiss(toastID);
         }, 2000);
         return;
+    }
+}
+export async function getRoom(slug: string) {
+    try {
+        const res = await axios.get(`${BACKEND_URL}/room/${slug}`);
+        return res.data.roomId;
+    }
+    catch (err: any) {
+        console.log(err.response.data.message);
+        return null;
     }
 }

@@ -3,8 +3,10 @@ import Eye from "../icons/Eye"
 import { signin, signup } from "../app/operations/auth";
 import { useState } from "react";
 import EyeClosed from "../icons/EyeClosed";
+import { useRouter } from "next/navigation";
 
 export default function Auth({ isSignup = false }) {
+  const router = useRouter(); 
 const [loading, setLoading] = useState<boolean>(false);
 const [showpass,setshowpass]=useState(false);
 const [showcpass,setshowcpass]=useState(false);//coonfirm passs variable 
@@ -45,12 +47,20 @@ const [showcpass,setshowcpass]=useState(false);//coonfirm passs variable
         setLoading(true);
         const res = await signup(form);
         setLoading(false);
+        if(res)
+        {
+            router.push('/signin');
+        }
         console.log(res);
       console.log("Signup Data:", form);
     } else {
         setLoading(true);
         const res = await signin(form);
         setLoading(false);
+        if(res)
+        {
+            router.push('/dashboard');
+        }
         console.log(res);
       console.log("Signin Data:", form);
     }
