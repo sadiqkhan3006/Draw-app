@@ -1,19 +1,30 @@
 import { RefObject } from "react";
 import axios from "axios";
 import { BACKEND_URL } from "@/app/config";
+import { Tool } from "@/components/DrawArea";
 type Shapes = {
-    type: "rect"
+    type: "Rectangle"
     x: number,
     y: number,
     width: number,
     height: number
+} | {
+    type: "Ellipse",
+    x: number,
+    y: number,
+    radiusX: number,
+    radiusY: number,
+    rotation: number,
+    startAngle: number,
+    endAngle: number
 }
-export default async function initDraw(canvas: HTMLCanvasElement, wsRef: RefObject<WebSocket | null>, roomId: string, token: string | null) {
+export default async function initDraw(canvas: HTMLCanvasElement, wsRef: RefObject<WebSocket | null>, roomId: string, token: string | null, selectedTool: Tool) {
     const res = await axios.get(`${BACKEND_URL}/chats/${roomId}`, {
         headers: {
             Authorization: `Bearer ${token}`
         }
     });
+
     console.log("existing shapes: ", res.data.messages);
     const existingShapes: Shapes[] = res.data.messages;
 
@@ -33,27 +44,57 @@ export default async function initDraw(canvas: HTMLCanvasElement, wsRef: RefObje
                 clearCanvas(ctx, canvas, existingShapes);
             }
             if (data.type === "onmessage") {
+                if (data.message.type === "Rectangle") {
+                    clearCanvas(ctx, canvas, existingShapes);
+                    ctx.strokeStyle = "#FFFFFF";
+                    ctx?.strokeRect(data.message.x, data.message.y, data.message.width, data.message.height);
+                }
+                else if (data.message.type === "Ellipse") {
+                    clearCanvas(ctx, canvas, existingShapes);
+                    ctx.strokeStyle = "#FFFFFF";
+                    ctx.beginPath();
+                    ctx.ellipse(data.message.x, data.message.y, data.message.radiusX, data.message.radiusY, data.message.rotation, data.message.startAngle, data.message.endAngle);
+                    ctx.stroke();
+                }
 
-
-                clearCanvas(ctx, canvas, existingShapes);
-                ctx.strokeStyle = "#FFFFFF";
-                ctx?.strokeRect(data.message.x, data.message.y, data.message.width, data.message.height);
             }
         }
     }
     const handleMove = (e: MouseEvent) => {
         if (clicked) {
-            width = (e.clientX - startX);
-            height = (e.clientY - startY);
-            clearCanvas(ctx, canvas, existingShapes);
-            ctx.strokeStyle = "#FFFFFF";
-            ctx?.strokeRect(startX, startY, width, height);
-            let currShape: Shapes = { type: "rect", x: startX, y: startY, width, height }
-            wsRef.current?.send(JSON.stringify({
-                type: "ongoing",
-                message: currShape,
-                roomId
-            }))
+            if (selectedTool === "Rectangle") {
+                //console.log("REcttt");
+                console.log("Current Tool", selectedTool);
+                width = (e.clientX - startX);
+                height = (e.clientY - startY);
+                clearCanvas(ctx, canvas, existingShapes);
+                ctx.strokeStyle = "#FFFFFF";
+                ctx?.strokeRect(startX, startY, width, height);
+                let currShape: Shapes = { type: "Rectangle", x: startX, y: startY, width, height }
+                wsRef.current?.send(JSON.stringify({
+                    type: "ongoing",
+                    message: currShape,
+                    roomId
+                }))
+            }
+            else if (selectedTool === "Ellipse") {
+                //console.log("Ellipse");
+                console.log("Current Tool", selectedTool);
+                width = e.clientX - startX;
+                height = e.clientY - startY;
+                clearCanvas(ctx, canvas, existingShapes);
+                ctx.strokeStyle = "#FFFFFF";
+                ctx.beginPath();
+                ctx.ellipse(startX + (width / 2), startY + (height / 2), Math.abs(width / 2), Math.abs(height / 2), 0, 0, 2 * Math.PI);
+                ctx.stroke();
+                let currShape: Shapes = { type: "Ellipse", x: startX + (width / 2), y: startY + (height / 2), radiusX: Math.abs(width / 2), radiusY: Math.abs(height / 2), rotation: 0, startAngle: 0, endAngle: 2 * Math.PI };
+                wsRef.current?.send(JSON.stringify({
+                    type: "ongoing",
+                    message: currShape,
+                    roomId
+                }))
+            }
+
 
         }
     };
@@ -70,18 +111,33 @@ export default async function initDraw(canvas: HTMLCanvasElement, wsRef: RefObje
         // clicked = !clicked;
         clicked = false;
         if (!clicked && width !== 0 && height !== 0) {
-            let currShape: Shapes = { type: "rect", x: startX, y: startY, width, height };
-            existingShapes.push(currShape);
-            wsRef.current?.send(JSON.stringify({
-                type: "chat",
-                message: currShape,
-                roomId
-            }))
-            console.log(existingShapes);
-            width = 0;
-            height = 0;
+            if (selectedTool === "Rectangle") {
+                let currShape: Shapes = { type: "Rectangle", x: startX, y: startY, width, height };
+                existingShapes.push(currShape);
+                wsRef.current?.send(JSON.stringify({
+                    type: "chat",
+                    message: currShape,
+                    roomId
+                }))
+                console.log(existingShapes);
+                width = 0;
+                height = 0;
+            }
+            else if (selectedTool === "Ellipse") {
+                let currShape: Shapes = { type: "Ellipse", x: startX + (width / 2), y: startY + (height / 2), radiusX: Math.abs(width / 2), radiusY: Math.abs(height / 2), rotation: 0, startAngle: 0, endAngle: 2 * Math.PI };
+                existingShapes.push(currShape);
+                wsRef.current?.send(JSON.stringify({
+                    type: "chat",
+                    message: currShape,
+                    roomId
+                }))
+                console.log(existingShapes);
+                width = 0;
+                height = 0;
+            }
+
         }
-        console.log("Mouseup:", e.clientX, e.clientY);
+        //console.log("Mouseup:", e.clientX, e.clientY);
     };
 
     canvas.addEventListener("mousemove", handleMove);
@@ -95,8 +151,18 @@ function clearCanvas(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, e
     ctx?.clearRect(0, 0, canvas.width, canvas.height);//doesnt work for -ve
     ctx.fillStyle = "#000000";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+
     existingShapes.forEach(ele => {
-        ctx.strokeStyle = "#FFFFFF";
-        ctx?.strokeRect(ele.x, ele.y, ele.width, ele.height);
+        if (ele.type === "Rectangle") {
+            ctx.strokeStyle = "#FFFFFF";
+            ctx?.strokeRect(ele.x, ele.y, ele.width, ele.height);
+        }
+        else if (ele.type === "Ellipse") {
+            ctx.strokeStyle = "#FFFFFF";
+            ctx.beginPath();
+            ctx.ellipse(ele.x, ele.y, ele.radiusX, ele.radiusY, ele.rotation, ele.startAngle, ele.endAngle);
+            ctx.stroke();
+        }
+
     });
 }
