@@ -1,4 +1,4 @@
-import { getRoom } from "@/app/operations/auth";
+import { getRoomId } from "@/app/operations/auth";
 import DrawArea from "@/components/DrawArea";
 export default async function Canvas({params}:{
     params:{
@@ -6,7 +6,7 @@ export default async function Canvas({params}:{
     }
 }){
     const slug:string = (await params).roomId;
-   const roomId:string|null = await getRoom(slug);
+   const roomId:string|null = await getRoomId(slug);
    console.log(roomId);
     if(!roomId)
     {

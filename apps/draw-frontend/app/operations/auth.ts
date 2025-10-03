@@ -51,13 +51,38 @@ export async function signin(body: Body) {
         return;
     }
 }
-export async function getRoom(slug: string) {
+export async function getRoomId(slug: string) {
     try {
         const res = await axios.get(`${BACKEND_URL}/room/${slug}`);
         return res.data.roomId;
     }
     catch (err: any) {
         console.log(err.response.data.message);
+        return null;
+    }
+}
+export async function getRooms(token: string) {
+    const toastID = toast.loading("Fetching Rooms !!")
+    try {
+        //console.log(token);
+        const res = await axios.get(`${BACKEND_URL}/rooms`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+        toast.success("Rooms Fetched !!", { id: toastID });
+        setTimeout(() => {
+            toast.dismiss(toastID);
+        }, 2000);
+
+        return res.data.rooms;
+    }
+    catch (err: any) {
+        console.log(err.response.data.message);
+        toast.error(err.response.data.message, { id: toastID })
+        setTimeout(() => {
+            toast.dismiss(toastID);
+        }, 2000);
         return null;
     }
 }

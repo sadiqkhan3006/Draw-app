@@ -206,6 +206,41 @@ app.get("/room/:slug", async (req, res) => {
     }
 
 })
+app.get("/rooms", protect, async (req: Request, res: Response) => {
+    try {
+        const userId = req.userId;
+        console.log("hitt");
+        if (!userId) {
+            return res.status(400).json({
+                message: "UserId missing",
+                success: false
+            })
+        }
+        const existingRooms = await prismaClient.room.findMany({
+            where: {
+                adminId: userId
+            }
+        })
+        if (!existingRooms) {
+            return res.status(400).json({
+                message: "No Rooms Found !!",
+                success: false,
+            })
+        }
+        return res.status(200).json({
+            message: "Rooms Fetched SuccessFully !!",
+            success: true,
+            rooms: existingRooms
+        })
+    }
+    catch (err: any) {
+        return res.status(400).json({
+            error: err.message || "Server error",
+            message: "Error while fetching Rooms"
+
+        })
+    }
+})
 app.listen("3030", () => {
     console.log("server started");
 })
