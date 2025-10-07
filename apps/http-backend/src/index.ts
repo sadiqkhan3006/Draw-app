@@ -4,13 +4,18 @@ import { prismaClient } from "@repo/db/client"
 import { JWT_SECRET } from "@repo/backend-common/config.ts";
 import bcrypt from "bcrypt"
 import { protect } from "./middleware";
+import cookieParser from 'cookie-parser'
 import cors from "cors";
 const app = express();
+
+app.use(cookieParser());
 app.use(
     cors(
         {
-            origin: "*",
-            credentials: true
+            origin: "http://localhost:3001", // Your frontend URL - be specific!
+            credentials: true, // This is crucial
+            methods: ['GET', 'POST', 'PUT', 'DELETE'],
+            allowedHeaders: ['Content-Type', 'Authorization']
         }
     )
 )
@@ -92,7 +97,20 @@ app.post("/signin", async (req: Request, res: Response) => {
             userId: user?.id
         }
         const token = jwt.sign(payload, JWT_SECRET);
-        return res.status(200).json({
+        // const options = {
+        //     expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
+        //     httpOnly: true,       // inaccessible to JS
+        //     secure: false,        // localhost HTTP
+        //     sameSite: "none",     // allow cross-site requests
+        //     path: "/",            // cookie available on all routes
+        // };
+        return res.cookie('token', token,
+            {
+                expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now,
+                httpOnly: true,
+                secure: true,
+            }
+        ).status(200).json({
             message: "user Signed in Successfully",
             success: true,
             token

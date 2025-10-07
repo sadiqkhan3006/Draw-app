@@ -1,6 +1,8 @@
 import axios, { Axios, AxiosError } from "axios";
 import { BACKEND_URL } from "../config"
 import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
+import { Router, RouterEvent } from "next/router";
 
 interface Body {
     name?: String,
@@ -33,7 +35,9 @@ export async function signin(body: Body) {
 
     const toastID = toast.loading("Loading..")
     try {
-        const res = await axios.post(`${BACKEND_URL}/signin`, body);
+        const res = await axios.post(`${BACKEND_URL}/signin`, body, {
+            withCredentials: true
+        });
         localStorage.setItem("token", res.data.token);
         toast.success("Signed in Successfull", { id: toastID });
         setTimeout(() => {
@@ -76,6 +80,33 @@ export async function getRooms(token: string) {
         }, 2000);
 
         return res.data.rooms;
+    }
+    catch (err: any) {
+        console.log(err.response.data.message);
+        toast.error(err.response.data.message, { id: toastID })
+        setTimeout(() => {
+            toast.dismiss(toastID);
+        }, 2000);
+        return null;
+    }
+}
+export async function createRoom(slug: string) {
+    const toastID = toast.loading("Creating new Room !!");
+
+    try {
+        //console.log(token);
+        //const router = useRouter();
+        const res = await axios.post(`${BACKEND_URL}/createroom`, {
+            slug
+        }, {
+            withCredentials: true
+        });
+        toast.success("Room Created !!", { id: toastID });
+        setTimeout(() => {
+            toast.dismiss(toastID);
+        }, 2000);
+        console.log(res.data.room);
+        return res.data.room;
     }
     catch (err: any) {
         console.log(err.response.data.message);

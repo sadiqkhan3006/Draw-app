@@ -11,8 +11,8 @@ declare global {
 export function protect(req: Request, res: Response, next: NextFunction) {
     try {
         //onsole.log("heyyy");
-        const token = req.body?.token || req.header("Authorization")?.replace("Bearer ", "");
-        //console.log("tokennn", token);
+        const token = req.cookies?.token || req.header("Authorization")?.replace("Bearer ", "") || req.body?.token;
+        console.log("tokennn", req.cookies?.token);
         if (!token) {
             return res.status(400).json(
                 {

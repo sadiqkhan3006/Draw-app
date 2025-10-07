@@ -115,6 +115,7 @@ export default async function initDraw(canvas: HTMLCanvasElement, wsRef: RefObje
                 }))
             }
             else if (selectedTool == "Pencil") {
+
                 ctx.strokeStyle = "#FFFFFF";
                 points.push({ x: e.clientX, y: e.clientY });
                 let currShape: Shapes = { "type": "Pencil", points };
