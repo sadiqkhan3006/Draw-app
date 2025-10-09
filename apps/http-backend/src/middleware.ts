@@ -27,7 +27,7 @@ export function protect(req: Request, res: Response, next: NextFunction) {
 
     }
     catch (err: any) {
-        return res.status(500).json({
+        return res.status(400).json({
             success: false,
             message: "Invaid token",
             error: err.message,

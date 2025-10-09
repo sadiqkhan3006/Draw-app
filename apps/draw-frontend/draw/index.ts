@@ -2,6 +2,7 @@ import { RefObject } from "react";
 import axios from "axios";
 import { BACKEND_URL } from "@/app/config";
 import { Tool } from "@/components/DrawArea";
+import toast from "react-hot-toast";
 interface Points {
     x: number,
     y: number,
@@ -77,6 +78,10 @@ export default async function initDraw(canvas: HTMLCanvasElement, wsRef: RefObje
                     ctx.stroke();
                 }
 
+            }
+            if (data.type === "room_delete") {
+                toast.error(data.message);
+                window.location.reload();
             }
         }
     }

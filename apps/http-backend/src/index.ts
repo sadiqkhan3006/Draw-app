@@ -12,7 +12,7 @@ app.use(cookieParser());
 app.use(
     cors(
         {
-            origin: "http://localhost:3001", // Your frontend URL - be specific!
+            origin: 'http://localhost:3001', // Your frontend URL - be specific!
             credentials: true, // This is crucial
             methods: ['GET', 'POST', 'PUT', 'DELETE'],
             allowedHeaders: ['Content-Type', 'Authorization']
@@ -108,7 +108,7 @@ app.post("/signin", async (req: Request, res: Response) => {
             {
                 expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now,
                 httpOnly: true,
-                secure: true,
+                secure: false,
             }
         ).status(200).json({
             message: "user Signed in Successfully",
@@ -125,6 +125,52 @@ app.post("/signin", async (req: Request, res: Response) => {
         })
     }
 
+})
+app.get("/me", protect, async (req: Request, res: Response) => {
+    try {
+        const userId = req.userId;
+        const user = await prismaClient.user.findFirst({
+            where: {
+                id: userId
+            }
+        })
+        res.status(200).json({
+            message: "user Found",
+            success: true,
+            user
+        })
+
+    }
+    catch (err: any) {
+        return res.status(400).json({
+            error: err.message || "Server error",
+            message: "User Not found",
+            success: false
+
+        })
+    }
+})
+app.post('/logout', async (req: Request, res: Response) => {
+    try {
+        res.cookie('token', "***",
+            {
+                expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now,
+                httpOnly: true,
+                secure: false,
+            }
+        ).status(200).json({
+            message: "User Logout !!",
+            success: true,
+        })
+    }
+    catch (err: any) {
+        return res.status(400).json({
+            error: err.message || "Server error",
+            message: "User failed to be added",
+            success: false
+
+        })
+    }
 })
 app.post("/createroom", protect, async (req: Request, res: Response) => {
     try {
@@ -171,6 +217,35 @@ app.post("/createroom", protect, async (req: Request, res: Response) => {
         })
     }
 })
+app.delete("/deleteroom/:roomId", protect, async (req: Request, res: Response) => {
+    try {
+        const roomId = req.params.roomId;
+        const userId = req.userId;
+        await prismaClient.chat.deleteMany({
+            where: {
+                roomId: roomId
+            }
+        });// manual cascade deletion
+        const deletedRoom = await prismaClient.room.delete({
+            where: {
+                id: roomId,
+                adminId: userId
+            }
+        })
+        return res.status(200).json({
+            message: "Room Deleted",
+            success: true,
+            room: deletedRoom
+        })
+    }
+    catch (err: any) {
+        return res.status(400).json({
+            error: err.message || "Server error",
+            message: "Room deletion Failed"
+
+        })
+    }
+})
 app.get("/chats/:roomId", async (req, res) => {
     try {
         const roomId = req.params.roomId;
@@ -213,7 +288,8 @@ app.get("/room/:slug", async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            roomId: room?.id
+            roomId: room?.id,
+            message: "Room Found"
         })
     }
     catch (err: any) {
@@ -227,7 +303,7 @@ app.get("/room/:slug", async (req, res) => {
 app.get("/rooms", protect, async (req: Request, res: Response) => {
     try {
         const userId = req.userId;
-        console.log("hitt");
+        //console.log("hitt");
         if (!userId) {
             return res.status(400).json({
                 message: "UserId missing",

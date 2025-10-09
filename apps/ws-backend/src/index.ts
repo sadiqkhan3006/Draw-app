@@ -121,7 +121,12 @@ wss.on('connection', (ws, request) => {
                 })
             }
             catch (err: any) {
-                console.log(err.message)
+                console.log(err.message);
+                return ws.send(JSON.stringify({
+                    type: "room_delete",
+                    message: "Room Deleted by Admin !!"
+
+                }))
             }
 
         }

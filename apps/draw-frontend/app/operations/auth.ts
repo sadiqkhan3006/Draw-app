@@ -55,6 +55,19 @@ export async function signin(body: Body) {
         return;
     }
 }
+export async function getUser() {
+    try {
+        const res = await axios.get(`${BACKEND_URL}/me`, {
+            withCredentials: true,
+        })
+        console.log("/me: ", res.data?.user);
+        return res.data?.user;
+    }
+    catch (err: any) {
+        console.log(err.message);
+        return null;
+    }
+}
 export async function getRoomId(slug: string) {
     try {
         const res = await axios.get(`${BACKEND_URL}/room/${slug}`);
@@ -101,7 +114,7 @@ export async function createRoom(slug: string) {
         }, {
             withCredentials: true
         });
-        toast.success("Room Created !!", { id: toastID });
+        toast.success(res.data?.message, { id: toastID });
         setTimeout(() => {
             toast.dismiss(toastID);
         }, 2000);
@@ -115,5 +128,27 @@ export async function createRoom(slug: string) {
             toast.dismiss(toastID);
         }, 2000);
         return null;
+    }
+}
+export async function deleteRoom(roomId: string) {
+    const toastID = toast.loading("Deleting..");
+    try {
+        const res = await axios.delete(`${BACKEND_URL}/deleteroom/${roomId}`, {
+            withCredentials: true
+        });
+        toast.success(res.data?.message, { id: toastID });
+        setTimeout(() => {
+            toast.dismiss(toastID);
+        }, 2000);
+        console.log(res.data);
+        return res.data?.success;
+    }
+    catch (err: any) {
+        console.log(err.response.data.message);
+        toast.error(err.response.data.message, { id: toastID })
+        setTimeout(() => {
+            toast.dismiss(toastID);
+        }, 2000);
+        return false;
     }
 }
