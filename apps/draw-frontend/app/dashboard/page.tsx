@@ -1,10 +1,12 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
-import { deleteRoom, getRooms } from "../operations/auth";
+import { useContext, useEffect, useRef, useState } from "react";
+import { deleteRoom, getRooms, logout } from "../operations/auth";
 import { Trash2, SquarePen, FolderOpen, Home } from "lucide-react";
 import Modal from "@/components/Modal";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { UserContext } from "@/Context/UserContext";
+import Unauthorized from "@/components/Unauthorized";
 
 interface Room {
   id: string;
@@ -18,6 +20,7 @@ export default function Dashboard() {
   const isJoin = useRef<boolean>(false);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [modal, setmodal] = useState(false);
+  const {user,setUser} = useContext(UserContext);
   const router = useRouter();
 
   function fetchDate(s: string) {
@@ -54,7 +57,14 @@ export default function Dashboard() {
         setLoading(false);
       });
   }, []);
-
+  if( !user)
+  {
+    return(
+        <>
+        <Unauthorized/>
+    </>
+    )
+  }
   if (loading) {
     return (
       <div className="h-screen w-screen bg-black text-white flex items-center justify-center">
@@ -66,7 +76,7 @@ export default function Dashboard() {
   return (
     <>
       {/* Empty State */}
-      {rooms.length === 0 && (
+      {!rooms  && (
         <div className="bg-black h-screen w-screen text-white flex flex-col items-center justify-center gap-4 px-4">
           {/* Top bar with Home icon */}
           <div className="absolute top-4 left-4 flex items-center gap-2 text-white font-semibold cursor-pointer hover:text-blue-400 transition-colors"
@@ -100,13 +110,18 @@ export default function Dashboard() {
       )}
 
       {/* Rooms List */}
-      {rooms.length !== 0 && (
+      {rooms  && (
         <div className="min-h-screen bg-black text-white px-6 py-8">
           {/* Top bar */}
           <div className="flex justify-between items-center mb-8 px-2">
             {/* Home Icon + Text */}
             <div
-              onClick={() => router.push("/")}
+              onClick={() =>{
+                 router.push("/");
+                
+              }
+               
+              }
               className="flex items-center gap-2 text-white font-semibold cursor-pointer hover:text-blue-400 transition-colors"
             >
               <Home className="w-5 h-5" />
@@ -126,6 +141,16 @@ export default function Dashboard() {
                 className="bg-gray-800 border border-gray-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-700 hover:scale-105 transition-all"
               >
                 Join Room
+              </button>
+              <button
+                onClick={async (e)=>{
+                    await logout();
+                    setUser(null);
+                    router.push("/");
+                }}
+                className="bg-gray-800 border border-gray-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-700 hover:scale-105 transition-all"
+              >
+                Logout
               </button>
             </div>
           </div>

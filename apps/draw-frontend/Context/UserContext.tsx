@@ -21,7 +21,7 @@ const UserProvider = ({children}:{children:React.ReactNode})=>{
         }).catch((e)=>{
             console.log(e);
         })
-    },[])
+    },[]);
     return(
         <UserContext.Provider value={{user,setUser}}>
             {children}

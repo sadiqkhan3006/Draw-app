@@ -68,9 +68,35 @@ export async function getUser() {
         return null;
     }
 }
-export async function getRoomId(slug: string) {
+export async function logout() {
+    const toastID = toast.loading("Loading..");
     try {
-        const res = await axios.get(`${BACKEND_URL}/room/${slug}`);
+        const res = await axios.post(`${BACKEND_URL}/logout`, {}, {
+            withCredentials: true,
+        })
+        toast.success(res.data?.message, { id: toastID });
+        setTimeout(() => {
+            toast.dismiss(toastID);
+        }, 2000);
+        return;
+
+    }
+    catch (err: any) {
+        console.log(err);
+        toast.error("Error", { id: toastID });
+        setTimeout(() => {
+            toast.dismiss(toastID);
+        }, 2000);
+        return;
+    }
+}
+export async function getRoomId(slug: string, token: string | null) {
+    try {
+        const res = await axios.get(`${BACKEND_URL}/room/${slug}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
         return res.data.roomId;
     }
     catch (err: any) {
@@ -79,13 +105,11 @@ export async function getRoomId(slug: string) {
     }
 }
 export async function getRooms(token: string) {
-    const toastID = toast.loading("Fetching Rooms !!")
+    const toastID = toast.loading("Loading..")
     try {
         //console.log(token);
         const res = await axios.get(`${BACKEND_URL}/rooms`, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
+            withCredentials: true
         });
         toast.success("Rooms Fetched !!", { id: toastID });
         setTimeout(() => {

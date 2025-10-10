@@ -3,12 +3,12 @@ import { UserContext } from "@/Context/UserContext";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 
 
 export default function Home() {
   const router = useRouter()
-  const {user,setUser} = useContext(UserContext);
+  const {user} = useContext(UserContext);
   return (
    <div className="bg-black text-2xl text-white h-screen w-screen overflow-hidden  " >
     <section className="min-h-screen flex flex-col items-center justify-center bg-black text-white px-4">

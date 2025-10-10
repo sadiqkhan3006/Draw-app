@@ -2,7 +2,7 @@
 import initDraw from "@/draw";
 import useWebSocket from "@/hooks/usewebsocket";
 import { Circle,Pencil,RectangleHorizontal } from 'lucide-react';
-import { useEffect, useRef } from "react";
+import { useContext, useEffect, useRef } from "react";
 import IconButton from "./IconButton";
 import { useState } from "react";
 import { Dispatch } from "react";
@@ -55,7 +55,7 @@ export default function DrawArea({roomId}:{
         },[loading,selectedTool])
         if(loading)
         {
-            return(<div>
+            return(<div className="flex h-screen w-screen items-center justify-center text-white bg-black font-bold text-3xl">
                 Connecting to server..
             </div>)
         }

@@ -1,15 +1,17 @@
 "use client";
 import Eye from "../icons/Eye"
 import { signin, signup } from "../app/operations/auth";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import EyeClosed from "../icons/EyeClosed";
 import { useRouter } from "next/navigation";
+import { UserContext } from "@/Context/UserContext";
 
 export default function Auth({ isSignup = false }) {
   const router = useRouter(); 
 const [loading, setLoading] = useState<boolean>(false);
 const [showpass,setshowpass]=useState(false);
 const [showcpass,setshowcpass]=useState(false);//coonfirm passs variable 
+const {setUser} = useContext(UserContext);
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -62,6 +64,7 @@ const [showcpass,setshowcpass]=useState(false);//coonfirm passs variable
             router.push('/dashboard');
         }
         console.log(res);
+        setUser(res.user);
       console.log("Signin Data:", form);
     }
     setForm({

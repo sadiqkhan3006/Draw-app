@@ -113,6 +113,7 @@ app.post("/signin", async (req: Request, res: Response) => {
         ).status(200).json({
             message: "user Signed in Successfully",
             success: true,
+            user,
             token
         })
     }
@@ -150,16 +151,16 @@ app.get("/me", protect, async (req: Request, res: Response) => {
         })
     }
 })
-app.post('/logout', async (req: Request, res: Response) => {
+app.post('/logout', protect, async (req: Request, res: Response) => {
     try {
-        res.cookie('token', "***",
+        res.cookie('token', "",
             {
-                expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now,
+                expires: new Date(0), // immdediate,
                 httpOnly: true,
                 secure: false,
             }
         ).status(200).json({
-            message: "User Logout !!",
+            message: "Logout suceessfull !!",
             success: true,
         })
     }
@@ -277,7 +278,7 @@ app.get("/chats/:roomId", async (req, res) => {
     }
 
 })
-app.get("/room/:slug", async (req, res) => {
+app.get("/room/:slug", protect, async (req, res) => {
     try {
         const slug = req.params.slug;
         const room = await prismaClient.room.findFirst({
