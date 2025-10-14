@@ -247,7 +247,7 @@ app.delete("/deleteroom/:roomId", protect, async (req: Request, res: Response) =
         })
     }
 })
-app.get("/chats/:roomId", async (req, res) => {
+app.get("/chats/:roomId", async (req: Request, res: Response) => {
     try {
         const roomId = req.params.roomId;
         console.log(req.params.roomId);
@@ -277,6 +277,42 @@ app.get("/chats/:roomId", async (req, res) => {
         })
     }
 
+})
+app.delete("/delete-chats/:roomId", protect, async (req: Request, res: Response) => {
+    try {
+        let userId = req?.userId;
+        let roomId = req.params?.roomId;
+        //check if room exist //
+        let existingRoom = await prismaClient.room.findFirst(
+            {
+                where: {
+                    id: roomId
+                }
+            }
+        )
+        if (!existingRoom) {
+            return res.status(400).json({
+                message: "Room doesnt exists",
+                success: false
+            })
+        }
+        await prismaClient.chat.deleteMany({
+            where: {
+                roomId
+            }
+        })
+        return res.status(200).json({
+            message: "Chats deleted...",
+            success: true
+        })
+
+    }
+    catch (err: any) {
+        return res.status(400).json({
+            message: err.message || "Something went Wrong",
+            success: false
+        })
+    }
 })
 app.get("/room/:slug", protect, async (req, res) => {
     try {

@@ -26,6 +26,20 @@ type Shapes = {
     type: "Pencil",
     points: Points[]
 }
+    | {
+        type: "Line",
+        startX: number,
+        startY: number,
+        endX: number,
+        endY: number
+    }
+    | {
+        type: "Arrow",
+        startX: number,
+        startY: number,
+        endX: number,
+        endY: number
+    }
 export default async function initDraw(canvas: HTMLCanvasElement, wsRef: RefObject<WebSocket | null>, roomId: string, token: string | null, selectedTool: Tool) {
     const res = await axios.get(`${BACKEND_URL}/chats/${roomId}`, {
         headers: {
@@ -76,6 +90,23 @@ export default async function initDraw(canvas: HTMLCanvasElement, wsRef: RefObje
 
                     });
                     ctx.stroke();
+                }
+                else if (data.message.type === "Line") {
+                    clearCanvas(ctx, canvas, existingShapes);
+                    ctx.beginPath();
+                    ctx.moveTo(data.message.startX, data.message.startY);
+                    ctx.strokeStyle = "#FFFFFF";
+                    ctx.lineTo(data?.message?.endX, data.message?.endY);
+                    ctx.stroke();
+                }
+                else if (data.message.type === "Arrow") {
+                    clearCanvas(ctx, canvas, existingShapes);
+                    ctx.beginPath();
+                    ctx.moveTo(data.message.startX, data.message.startY);
+                    ctx.strokeStyle = "#FFFFFF";
+                    ctx.lineTo(data?.message?.endX, data.message?.endY);
+                    ctx.stroke();
+                    drawHead(data.message.startX, data.message.startY, data?.message?.endX, data.message?.endY, ctx)
                 }
 
             }
@@ -132,6 +163,35 @@ export default async function initDraw(canvas: HTMLCanvasElement, wsRef: RefObje
                     roomId
                 }))
                 //console.log("points", points)
+            }
+            else if (selectedTool == "Line") {
+                clearCanvas(ctx, canvas, existingShapes);
+                let currShape: Shapes = { type: "Line", startX, startY, endX: e.clientX, endY: e.clientY };
+                ctx.strokeStyle = "#FFFFFF";
+                ctx.beginPath();
+                ctx.moveTo(startX, startY);
+                ctx.lineTo(e.clientX, e.clientY);
+                ctx.stroke();
+                wsRef.current?.send(JSON.stringify({
+                    type: "ongoing",
+                    message: currShape,
+                    roomId
+                }))
+            }
+            else if (selectedTool == "Arrow") {
+                clearCanvas(ctx, canvas, existingShapes);
+                let currShape: Shapes = { type: "Arrow", startX, startY, endX: e.clientX, endY: e.clientY };
+                ctx.strokeStyle = "#FFFFFF";
+                ctx.beginPath();
+                ctx.moveTo(startX, startY);
+                ctx.lineTo(e.clientX, e.clientY);
+                ctx.stroke();
+                drawHead(startX, startY, e.clientX, e.clientY, ctx);
+                wsRef.current?.send(JSON.stringify({
+                    type: "ongoing",
+                    message: currShape,
+                    roomId
+                }))
             }
 
 
@@ -190,6 +250,26 @@ export default async function initDraw(canvas: HTMLCanvasElement, wsRef: RefObje
                 points = [];
                 console.log(existingShapes);
             }
+            else if (selectedTool == "Line") {
+                let currShape: Shapes = { type: "Line", startX, startY, endX: e.clientX, endY: e.clientY };
+                existingShapes.push(currShape);
+                wsRef.current?.send(JSON.stringify({
+                    type: "chat",
+                    message: currShape,
+                    roomId
+                }))
+                clearCanvas(ctx, canvas, existingShapes);
+            }
+            else if (selectedTool == "Arrow") {
+                let currShape: Shapes = { type: "Arrow", startX, startY, endX: e.clientX, endY: e.clientY };
+                existingShapes.push(currShape);
+                wsRef.current?.send(JSON.stringify({
+                    type: "chat",
+                    message: currShape,
+                    roomId
+                }))
+                clearCanvas(ctx, canvas, existingShapes);
+            }
 
         }
         //console.log("Mouseup:", e.clientX, e.clientY);
@@ -230,6 +310,40 @@ function clearCanvas(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, e
             });
             ctx.stroke();
         }
+        else if (ele.type == "Line") {
+            ctx.beginPath();
+            ctx.strokeStyle = "#FFFFFF";
+            ctx.moveTo(ele?.startX, ele?.startY);
+            ctx.lineTo(ele?.endX, ele?.endY);
+            ctx.stroke();
+        }
+        else if (ele.type == "Arrow") {
+            ctx.beginPath();
+            ctx.strokeStyle = "#FFFFFF";
+            ctx.moveTo(ele?.startX, ele?.startY);
+            ctx.lineTo(ele?.endX, ele?.endY);
+            ctx.stroke();
+            drawHead(ele?.startX, ele?.startY, ele?.endX, ele?.endY, ctx);
+        }
 
     });
+}
+function drawHead(starX: number, startY: number, endX: number, endY: number, ctx: CanvasRenderingContext2D) {
+    if (starX === endX && startY === endY) return;
+    let angle = Math.atan2((endY - startY), (endX - starX));
+    ctx.beginPath();
+    ctx.strokeStyle = "#FFFFFF"
+    let len = 15;
+    ctx.moveTo(endX, endY);
+    ctx.lineTo(
+        endX - len * Math.cos(angle - Math.PI / 6),
+        endY - len * Math.sin(angle - Math.PI / 6),
+    )
+    ctx.moveTo(endX, endY);
+    ctx.lineTo(
+        endX - len * Math.cos(angle + Math.PI / 6),
+        endY - len * Math.sin(angle + Math.PI / 6),
+    )
+    ctx.stroke();
+
 }

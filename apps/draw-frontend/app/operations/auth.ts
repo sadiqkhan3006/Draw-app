@@ -176,3 +176,25 @@ export async function deleteRoom(roomId: string) {
         return false;
     }
 }
+export async function deleteChats(roomId: string) {
+    const toastID = toast.loading("Deleting..");
+    try {
+        const res = await axios.delete(`${BACKEND_URL}/delete-chats/${roomId}`, {
+            withCredentials: true
+        });
+        toast.success(res.data?.message, { id: toastID });
+        setTimeout(() => {
+            toast.dismiss(toastID);
+        }, 2000);
+        console.log(res.data);
+        return res.data?.success;
+    }
+    catch (err: any) {
+        console.log(err.response.data.message);
+        toast.error(err.response.data.message, { id: toastID })
+        setTimeout(() => {
+            toast.dismiss(toastID);
+        }, 2000);
+        return false;
+    }
+}

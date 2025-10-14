@@ -1,13 +1,14 @@
 "use client"
 import initDraw from "@/draw";
 import useWebSocket from "@/hooks/usewebsocket";
-import { Circle,Pencil,RectangleHorizontal } from 'lucide-react';
+import { Circle,Pencil,RectangleHorizontal,Minus,MoveUpRight } from 'lucide-react';
 import { useContext, useEffect, useRef } from "react";
 import IconButton from "./IconButton";
 import { useState } from "react";
 import { Dispatch } from "react";
 import { SetStateAction } from "react";
-export type Tool = "Ellipse"|"Rectangle"|"Pencil";
+import { deleteChats } from "@/app/operations/auth";
+export type Tool = "Ellipse"|"Rectangle"|"Pencil"|"Line"|"Arrow";
 export default function DrawArea({roomId}:{
     roomId:string
 })
@@ -63,17 +64,32 @@ export default function DrawArea({roomId}:{
             <div className="overflow-hidden">
                 <canvas
                 ref={canvasRef} width={window.innerWidth} height={window.innerHeight} style={{ border: "1px solid red" }} ></canvas>
-                <TopBar selectedTool={selectedTool} setselectedTool={setselectedTool}/>
+                <TopBar selectedTool={selectedTool} setselectedTool={setselectedTool} roomId={roomId}/>
             </div>
         )
 }
-function TopBar({selectedTool,setselectedTool}:{selectedTool:Tool,setselectedTool:Dispatch<SetStateAction<Tool>>})
+function TopBar({selectedTool,setselectedTool,roomId}:{selectedTool:Tool,setselectedTool:Dispatch<SetStateAction<Tool>>,roomId:string})
 {
     return(
-        <div className="absolute top-[2px] p-3  left-[2px] bg-gray-400 text-white flex flex-row gap-x-4">
-            <IconButton Icon={Circle} selected={"Ellipse"===selectedTool} onClickFunction={setselectedTool} shape={'Ellipse'}/>
+        <div className="absolute top-[2px] left-[2px] w-full text-white flex flex-row justify-between items-center ">
+           <div className="bg-gray-400 p-3 flex flex-row gap-x-4 ">
+             <IconButton Icon={Circle} selected={"Ellipse"===selectedTool} onClickFunction={setselectedTool} shape={'Ellipse'}/>
             <IconButton Icon={Pencil} selected={"Pencil"===selectedTool} onClickFunction={setselectedTool} shape={'Pencil'}/>
             <IconButton Icon={RectangleHorizontal} selected={"Rectangle"===selectedTool} onClickFunction={setselectedTool} shape={'Rectangle'}/>
+            <IconButton Icon={Minus} selected={"Line"===selectedTool} onClickFunction={setselectedTool} shape={'Line'}/>
+            <IconButton Icon={MoveUpRight} selected={"Arrow"===selectedTool} onClickFunction={setselectedTool} shape={'Arrow'}/>
+           </div>
+           
+            <button
+            onClick={async (e)=>{
+                await deleteChats(roomId);
+                setselectedTool(selectedTool=="Rectangle"?"Pencil":"Rectangle");
+            }}
+              className="bg-white cursor-pointer text-black px-4 py-2 rounded-lg font-medium hover:scale-105 hover:bg-gray-200 transition-all mr-3"
+            >
+              Delete Shapes
+            </button>
+           
         </div>
     )
 }

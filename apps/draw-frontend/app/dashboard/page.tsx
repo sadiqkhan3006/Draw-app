@@ -57,7 +57,7 @@ export default function Dashboard() {
         setLoading(false);
       });
   }, []);
-  if( !user)
+  if(!user)
   {
     return(
         <>
