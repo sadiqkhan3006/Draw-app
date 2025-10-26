@@ -140,6 +140,7 @@ export default async function initDraw(canvas: HTMLCanvasElement, wsRef: RefObje
                 height = e.clientY - startY;
                 clearCanvas(ctx, canvas, existingShapes);
                 ctx.strokeStyle = "#FFFFFF";
+
                 ctx.beginPath();
                 ctx.ellipse(startX + (width / 2), startY + (height / 2), Math.abs(width / 2), Math.abs(height / 2), 0, 0, 2 * Math.PI);
                 ctx.stroke();
@@ -168,6 +169,7 @@ export default async function initDraw(canvas: HTMLCanvasElement, wsRef: RefObje
                 clearCanvas(ctx, canvas, existingShapes);
                 let currShape: Shapes = { type: "Line", startX, startY, endX: e.clientX, endY: e.clientY };
                 ctx.strokeStyle = "#FFFFFF";
+                //ctx.lineWidth = 3;
                 ctx.beginPath();
                 ctx.moveTo(startX, startY);
                 ctx.lineTo(e.clientX, e.clientY);

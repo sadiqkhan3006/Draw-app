@@ -302,7 +302,7 @@ app.delete("/delete-chats/:roomId", protect, async (req: Request, res: Response)
             }
         })
         return res.status(200).json({
-            message: "Chats deleted...",
+            message: "Shapes deleted...",
             success: true
         })
 
