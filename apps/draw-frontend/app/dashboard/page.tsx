@@ -1,7 +1,7 @@
 "use client";
 import { useContext, useEffect, useRef, useState } from "react";
 import { deleteRoom, getRooms, logout } from "../operations/auth";
-import { Trash2, SquarePen, FolderOpen, Home } from "lucide-react";
+import { Trash2, SquarePen, FolderOpen , Home } from "lucide-react";
 import Modal from "@/components/Modal";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
@@ -72,11 +72,11 @@ export default function Dashboard() {
       </div>
     );
   }
-
+  console.log(rooms);
   return (
     <>
       {/* Empty State */}
-      {!rooms  && (
+      {rooms?.length==0 && (
         <div className="bg-black h-screen w-screen text-white flex flex-col items-center justify-center gap-4 px-4">
           {/* Top bar with Home icon */}
           <div className="absolute top-4 left-4 flex items-center gap-2 text-white font-semibold cursor-pointer hover:text-blue-400 transition-colors"
