@@ -1,15 +1,14 @@
 import axios from "axios";
 import {BACKEND_URL, TOKEN} from "../../config"
 import ChatRoom   from "../../components/ChatRoom";
-export default async function Chat({params}:{
-    params:{
-        slug:string
-    }
+type Params = Promise<{ slug: string}>
+export default async function Chat(props:{
+    params:Params
 })
 {
     let roomId="";
     try{
-        const slug= (await params).slug;
+        const { slug } =  await props.params;
         const res = await axios.post(`${BACKEND_URL}/createroom`,{
         slug,token:TOKEN});
         roomId  = res.data.room.id;
