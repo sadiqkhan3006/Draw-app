@@ -7,6 +7,7 @@ import { protect } from "./middleware";
 import cookieParser from 'cookie-parser'
 import cors from "cors";
 const app = express();
+const apiRouter = express.Router();
 
 app.use(cookieParser());
 app.use(
@@ -20,7 +21,8 @@ app.use(
     )
 )
 app.use(express.json());
-app.post("/signup", async (req: Request, res: Response) => {
+app.use("/api", apiRouter);
+apiRouter.post("/signup", async (req: Request, res: Response) => {
     const { email, password, name, confirmpassword } = req.body;
     if (!email || !password || !name || !confirmpassword) {
         return res.status(400).json({
@@ -63,7 +65,7 @@ app.post("/signup", async (req: Request, res: Response) => {
 
 
 })
-app.post("/signin", async (req: Request, res: Response) => {
+apiRouter.post("/signin", async (req: Request, res: Response) => {
     const { email, password } = req.body;
     if (!email || !password) {
         return res.status(400).json({
@@ -127,7 +129,7 @@ app.post("/signin", async (req: Request, res: Response) => {
     }
 
 })
-app.get("/me", protect, async (req: Request, res: Response) => {
+apiRouter.get("/me", protect, async (req: Request, res: Response) => {
     try {
         const userId = req.userId;
         const user = await prismaClient.user.findFirst({
@@ -151,7 +153,7 @@ app.get("/me", protect, async (req: Request, res: Response) => {
         })
     }
 })
-app.post('/logout', protect, async (req: Request, res: Response) => {
+apiRouter.post('/logout', protect, async (req: Request, res: Response) => {
     try {
         res.cookie('token', "",
             {
@@ -173,7 +175,7 @@ app.post('/logout', protect, async (req: Request, res: Response) => {
         })
     }
 })
-app.post("/createroom", protect, async (req: Request, res: Response) => {
+apiRouter.post("/createroom", protect, async (req: Request, res: Response) => {
     try {
         const { slug } = req.body;
         const userId = req.userId;
@@ -218,7 +220,7 @@ app.post("/createroom", protect, async (req: Request, res: Response) => {
         })
     }
 })
-app.delete("/deleteroom/:roomId", protect, async (req: Request, res: Response) => {
+apiRouter.delete("/deleteroom/:roomId", protect, async (req: Request, res: Response) => {
     try {
         const roomId = req.params.roomId;
         const userId = req.userId;
@@ -247,7 +249,7 @@ app.delete("/deleteroom/:roomId", protect, async (req: Request, res: Response) =
         })
     }
 })
-app.get("/chats/:roomId", async (req: Request, res: Response) => {
+apiRouter.get("/chats/:roomId", async (req: Request, res: Response) => {
     try {
         const roomId = req.params.roomId;
         console.log(req.params.roomId);
@@ -278,7 +280,7 @@ app.get("/chats/:roomId", async (req: Request, res: Response) => {
     }
 
 })
-app.delete("/delete-chats/:roomId", protect, async (req: Request, res: Response) => {
+apiRouter.delete("/delete-chats/:roomId", protect, async (req: Request, res: Response) => {
     try {
         let userId = req?.userId;
         let roomId = req.params?.roomId;
@@ -314,15 +316,16 @@ app.delete("/delete-chats/:roomId", protect, async (req: Request, res: Response)
         })
     }
 })
-app.get("/room/:slug", protect, async (req, res) => {
+apiRouter.get("/room/:slug", protect, async (req, res) => {
     try {
         const slug = req.params.slug;
+        console.log("heyy1", slug);
         const room = await prismaClient.room.findFirst({
             where: {
                 slug
             }
         });
-
+        console.log("heyy", room);
         return res.status(200).json({
             success: true,
             roomId: room?.id,
@@ -337,7 +340,7 @@ app.get("/room/:slug", protect, async (req, res) => {
     }
 
 })
-app.get("/rooms", protect, async (req: Request, res: Response) => {
+apiRouter.get("/rooms", protect, async (req: Request, res: Response) => {
     try {
         const userId = req.userId;
         //console.log("hitt");

@@ -6,13 +6,13 @@ import { cookies } from "next/headers";
 
 type Params = Promise<{ slug: string}>
 
-export default async function Canvas(props: {
+export default async function Canvas({params}: {
     params: Params
 }) {
   // Await params and use the correct parameter name
   
-  const { slug } =  await props.params;
-  
+  const {slug}  =  (await params);
+  console.log("sluggg",slug);
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value ?? null;
   
