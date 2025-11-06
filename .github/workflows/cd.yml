@@ -23,6 +23,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Generate Prisma Client
+        run: |
+          cd packages/db && pnpm run db:deploy
+
       - name: Run build
         run: pnpm run build
 
