@@ -1,0 +1,13 @@
+name: Continuous Deployment
+on:
+  push:
+    branches: [main]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy Everything
+    steps:
+      - name: Save pem key
+        run: |
+          echo {{secrets.SSH_SECRET}} > key.pem
+          chmod 600 key.pem
