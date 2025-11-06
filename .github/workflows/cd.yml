@@ -15,4 +15,4 @@ jobs:
 
       - name: Deploy to EC2
         run: |
-          ssh -i ~/key.pem -o StrictHostKeyChecking=no ubuntu@"${{secrets.EC2_IP}}" -t "cd /home/ubuntu/Draw-app && git pull origin main && pnpm run build && pm2 restart all"
+          ssh -i ~/key.pem -o StrictHostKeyChecking=no ubuntu@"${{secrets.EC2_IP}}" -t "source ~/.bashrc && cd /home/ubuntu/Draw-app && git pull origin main && pnpm run build && pm2 restart all"
