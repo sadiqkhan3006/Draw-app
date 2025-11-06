@@ -9,7 +9,7 @@ jobs:
     steps:
       - name: Save pem key
         run: |
-          echo "${{secrets.SSH_SECRET}}" > key.pem
+          echo "${{secrets.SSH_SECRET}}" &> key.pem
           chmod 600 key.pem
 
       - name: Deploy to EC2
