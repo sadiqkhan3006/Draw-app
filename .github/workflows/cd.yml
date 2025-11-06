@@ -28,7 +28,7 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           NODE_ENV: production
         run: |
-          cd packages/db && pnpm run db:deploy
+          cd packages/db && pnpm run db:deploy && ls
 
       - name: Run build
         run: pnpm run build
