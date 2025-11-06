@@ -16,4 +16,6 @@ jobs:
       - name: Deploy to EC2
         run: |
           ssh -i ~/key.pem -o StrictHostKeyChecking=no ubuntu@"${{secrets.EC2_IP}}" \
-          "export PATH=/home/ubuntu/.nvm/versions/node/v22.17.0/bin:\$PATH && cd /home/ubuntu/Draw-app && git pull origin main && pnpm run build && pm2 restart all"
+          "export PATH=/home/ubuntu/.nvm/versions/node/v22.17.0/bin:\$PATH && \
+           cd /home/ubuntu/Draw-app && git pull origin main && pnpm install && \
+           pnpm run build && pm2 restart all"
