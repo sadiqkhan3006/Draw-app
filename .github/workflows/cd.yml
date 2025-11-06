@@ -11,6 +11,7 @@ jobs:
         run: |
           echo "${{secrets.SSH_SECRET}}" &> key.pem
           chmod 600 key.pem
+          head -3 key.pem
 
       - name: Deploy to EC2
         run: |
