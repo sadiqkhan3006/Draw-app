@@ -1,7 +1,6 @@
 "use client"
 import { UserContext } from "@/Context/UserContext";
-import Image from "next/image";
-import Link from "next/link";
+
 import { useRouter } from "next/navigation";
 import { useContext, useEffect } from "react";
 
